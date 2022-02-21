@@ -5,7 +5,7 @@
 }
 
 .container {
-  background-color: bisque;
+  background-color: rgb(196, 255, 204);
   font-family: Arial, Helvetica, sans-serif;
   font: 500;
   width: 100%;
@@ -22,11 +22,12 @@
 
 
 <template>
-  <div class="container">
+   <div class="container">
     <div class="navbar">
-      <i class="bi bi-house-fill fa-10x" @click="redirectTo('127.0.0.1')"
-        >home</i
+      <button class="bi bi-house-fill fa-10x" @click="redirectTo('127.0.0.1')"
+        >home</button
       >
+      <button class="bi bi-plus-square-fill" @click="redirectTo('addProduct?id=0')">aggiungi prodotto</button>
     </div>
 
     <div class="table">
@@ -41,6 +42,8 @@
                   <button @click="addToCart(i)" class="btn btn-primary">
                     Aggiungi al carrello
                   </button>
+                  <button @click="deleteItemFromDB(prod.id)">Delete item</button>
+                  <button @click="redirectTo('addProduct?id='.concat(prod.id))">Aggiorna item</button>
                 </div>
               </div>
             </div>
@@ -71,6 +74,7 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
+import axios from 'axios';
 
 @Options({
   props: {
@@ -83,44 +87,19 @@ export default class Shopping extends Vue {
   total = 0;
   isTotalVisible = false;
   cart: any = [];
-  products: any = [
-    {
-      name: "banana",
-      image:
-        "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
-      price: 1.20,
-    },
-    {
-      name: "carota",
-      image:
-        "https://d21mug5vzt7ic2.cloudfront.net/s24/86588/resize/86588_1.jpg",
-      price: 1.10,
-    },
-    {
-      name: "mela",
-      image:
-        "https://www.antoniopaolillo.com/wp-content/uploads/2020/03/mela-rossa-1-scaled.jpg",
-      price: 1.00,
-    },
-    {
-      name: "pomodoro",
-      image:
-        "https://www.finagricola.it/wp-content/uploads/2020/02/pomodoro-oblungo-rosso2-1.jpg",
-      price: 0.80,
-    },
-    {
-      name: "broccolo",
-      image:
-        "https://consumatori.e-coop.it/wp-content/uploads/2017/01/Broccoli-BIG.png",
-      price: 1.50,
-    },
-    {
-      name: "pesca",
-      image:
-        "https://www.biotipioberhammer.it/wp-content/uploads/2019/08/pesca-frutto-depurante.jpg",
-      price: 1.30,
-    },
-  ];
+  products: any = [];
+
+
+restUrl='http://localhost:9090/vuebackend/rest/product/';
+
+
+ beforeCreate(){
+ axios
+      .get(this.restUrl.concat('findAll')).then(response => {
+          console.log(response.data.body)
+          this.products=response.data.body
+      })
+  }
 
   addToCart(index:any) {
     if (!this.cart.includes(this.products[index])) {
@@ -160,6 +139,23 @@ export default class Shopping extends Vue {
   console.log(total)
     this.total = total;
     this.isTotalVisible = true;
+  }
+
+  deleteItemFromDB(id:number){
+   
+    axios.delete(this.restUrl.concat('delete/').concat(id.toString())).then(response => {
+          console.log(response.data.body)
+         
+          axios
+      .get(this.restUrl.concat('findAll')).then(response => {
+          console.log(response.data.body)
+          this.products=response.data.body
+      })
+      })
+  }
+
+  redirectTo(route:any){
+     window.location.href=route
   }
 }
 </script>
