@@ -22,12 +22,17 @@
 
 
 <template>
-   <div class="container">
+  <div class="container">
     <div class="navbar">
-      <button class="bi bi-house-fill fa-10x" @click="redirectTo('127.0.0.1')"
-        >home</button
+      <button class="bi bi-house-fill fa-10x" @click="redirectTo('127.0.0.1')">
+        home
+      </button>
+      <button
+        class="bi bi-plus-square-fill"
+        @click="redirectTo('addProduct?id=0')"
       >
-      <button class="bi bi-plus-square-fill" @click="redirectTo('addProduct?id=0')">aggiungi prodotto</button>
+        aggiungi prodotto
+      </button>
     </div>
 
     <div class="table">
@@ -42,8 +47,12 @@
                   <button @click="addToCart(i)" class="btn btn-primary">
                     Aggiungi al carrello
                   </button>
-                  <button @click="deleteItemFromDB(prod.id)">Delete item</button>
-                  <button @click="redirectTo('addProduct?id='.concat(prod.id))">Aggiorna item</button>
+                  <button @click="deleteItemFromDB(prod.id)">
+                    Delete item
+                  </button>
+                  <button @click="redirectTo('addProduct?id='.concat(prod.id))">
+                    Aggiorna item
+                  </button>
                 </div>
               </div>
             </div>
@@ -74,7 +83,7 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import axios from 'axios';
+import axios from "axios";
 
 @Options({
   props: {
@@ -89,19 +98,30 @@ export default class Shopping extends Vue {
   cart: any = [];
   products: any = [];
 
+  restUrl = "http://localhost:9090/vuebackend/rest/product/";
 
-restUrl='http://localhost:9090/vuebackend/rest/product/';
+  beforeCreate() {
+    if (!sessionStorage.getItem("token")) {
+      window.location.href = "/login";
+    } else {
+      let token = sessionStorage.getItem("token");
 
+      let config = {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      };
 
- beforeCreate(){
- axios
-      .get(this.restUrl.concat('findAll')).then(response => {
-          console.log(response.data.body)
-          this.products=response.data.body
-      })
+      console.log(config)
+      
+      axios.get(this.restUrl.concat("findAll"), config).then((response) => {
+        console.log(response.data.body);
+        this.products = response.data.body;
+      });
+    }
   }
 
-  addToCart(index:any) {
+  addToCart(index: any) {
     if (!this.cart.includes(this.products[index])) {
       this.cart.push(this.products[index]);
       let prodIndex = this.cart.indexOf(this.products[index]);
@@ -117,7 +137,7 @@ restUrl='http://localhost:9090/vuebackend/rest/product/';
     }
   }
 
-  deleteItem(index:any) {
+  deleteItem(index: any) {
     let quantityC = this.cart[index].quantity;
     quantityC = quantityC - 1;
     this.cart[index].quantity = quantityC;
@@ -133,29 +153,29 @@ restUrl='http://localhost:9090/vuebackend/rest/product/';
   getTotal() {
     this.isTotalVisible = false;
     let total = 0;
-    this.cart.forEach((element:any) => {
+    this.cart.forEach((element: any) => {
       total += element.priceCart;
     });
-  console.log(total)
+    console.log(total);
     this.total = total;
     this.isTotalVisible = true;
   }
 
-  deleteItemFromDB(id:number){
-   
-    axios.delete(this.restUrl.concat('delete/').concat(id.toString())).then(response => {
-          console.log(response.data.body)
-         
-          axios
-      .get(this.restUrl.concat('findAll')).then(response => {
-          console.log(response.data.body)
-          this.products=response.data.body
-      })
-      })
+  deleteItemFromDB(id: number) {
+    axios
+      .delete(this.restUrl.concat("delete/").concat(id.toString()))
+      .then((response) => {
+        console.log(response.data.body);
+
+        axios.get(this.restUrl.concat("findAll")).then((response) => {
+          console.log(response.data.body);
+          this.products = response.data.body;
+        });
+      });
   }
 
-  redirectTo(route:any){
-     window.location.href=route
+  redirectTo(route: any) {
+    window.location.href = route;
   }
 }
 </script>

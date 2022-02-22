@@ -56,12 +56,15 @@ export default class AddProduct extends Vue {
   msg!: string;
   name=""
   price=0
-  product:Product
+  product:any
   prodId:any
   restUrl='http://localhost:9090/vuebackend/rest/product/';
 
     beforeCreate(){
-     const route = useRoute();
+    if(!sessionStorage.getItem('token')){
+        window.location.href='/login'
+    }else{
+ const route = useRoute();
     this.prodId=route.query.id
     if(this.prodId!==0){
         axios.get(this.restUrl.concat('findById/').concat(this.prodId)).then(response=>{
@@ -69,6 +72,8 @@ export default class AddProduct extends Vue {
             this.price=response.data.body.price
         })
     }
+    }
+   
     }
 
     send(){
@@ -87,11 +92,7 @@ export default class AddProduct extends Vue {
 
 
 }
-export class Product{
-    id:number
-    name:string
-    price:number
-}
+
 </script>
 
 
